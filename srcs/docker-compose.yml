@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx
+    build: ./requirements/nginx/
+    env_file: .env
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - wp_data:/var/www/html/wordpress
+    networks:
+      - ft_inception
+    depends_on:
+      - wordpress
+    restart: always
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    build: ./requirements/wordpress
+    env_file: .env
+    volumes:
+      - wp_data:/var/www/html/wordpress
+    networks:
+      - ft_inception
+    depends_on:
+      - mariadb
+    restart: always
+    expose:
+      - "9000"
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb
+    build: ./requirements/mariadb/
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - ft_inception
+    restart: always
+    expose:
+      - "3306"
+
+networks:
+  ft_inception:
+    name: 'ft_inception'
+    driver: bridge
+
+volumes:
+  db_data:
+    name: db_data
+    driver: local
+    driver_opts:
+      device: /home/warchang/data/db_data
+      type: none
+      o: bind
+  wp_data:
+    name: wp_data
+    driver: local
+    driver_opts:
+      device: /home/warchang/data/wp_data
+      type: none
+      o: bind
